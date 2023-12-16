@@ -1,0 +1,7 @@
+{
+    "explorer.excludeGitIgnore": true,
+    "doxdocgen.generic.useGitUserEmail": true,
+    "doxdocgen.generic.useGitUserName": true,
+    "scm.alwaysShowActions": false,
+    "scm.alwaysShowRepositories": false
+}
