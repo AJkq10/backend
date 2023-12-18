@@ -2,6 +2,7 @@ const express = require('express');
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { MongoClient } = require('mongodb'); // Add this line for MongoDB
 
 
 const app = express();
@@ -19,8 +20,114 @@ const outputDir = path.join(appDir, 'output');
 fs.mkdirSync(tempDir, { recursive: true });
 fs.mkdirSync(outputDir, { recursive: true });
 
+
+const mongoUrl = 'mongodb://localhost:27017';
+const dbName = 'project';
+
+
+const client = new MongoClient(mongoUrl);
+
+
+client.connect(err => {
+  if (err) {
+    console.error('Error connecting to MongoDB:', err);
+    return;
+  }
+  console.log('Connected to MongoDB');
+});
+
+app.use(express.json());
+
+
+app.get('/api/getData', async (req, res) => {
+  try {
+    const db = client.db(dbName);
+    const collection = db.collection('sessions');
+    const result = await collection.find({}).toArray();
+    console.log(result);
+    res.json({ isError: 0, result });
+  } catch (error) {
+    console.error('Error retrieving data from MongoDB:', error);
+    res.status(500).json({ isError: 1, result: 'Error retrieving data from MongoDB' });
+  }
+});
+
+app.get('/api/getSession', async (req, res) => {
+  try {
+    const db = client.db(dbName);
+    const collection = db.collection('sessions');
+    const newSession = generateNewSession();
+    console.log('Searching for session with sessionId:', newSession);
+    const existingSession = await collection.findOne({ sessionId: newSession });
+    console.log(existingSession);
+    if (existingSession) {
+      console.log('Session already exists. Generating a new one.');
+      return res.redirect('/api/newSession');
+    }
+    const result = await collection.insertOne({
+      sessionId: newSession,
+      userId: [1],
+    });
+    
+    if (result) {
+      console.log('Retrieved data from MongoDB:', result);
+      res.json({ isError: 0, result });
+    } else {
+      console.error('No data retrieved from MongoDB');
+      res.status(404).json({ isError: 1, result: 'No data retrieved from MongoDB' });
+    }
+  } catch (error) {
+    console.error('Error retrieving data from MongoDB:', error);
+    res.status(500).json({ isError: 1, result: 'Error retrieving data from MongoDB' });
+  }
+});
+app.post('/api/setsession', async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    console.log(req.body);
+    const db = client.db(dbName);
+    const collection = db.collection('sessions');
+    const existingSession = await collection.findOne({ sessionId: sessionId });
+
+    let N = 0;
+
+    if (existingSession) {
+      N = existingSession.userId.length;
+      const updateResult = await collection.updateOne(
+        { sessionId: sessionId },
+        { $push: { userId: N + 1 }}
+      );
+
+      if (updateResult.modifiedCount === 1) {
+        const updatedSession = await collection.findOne({ sessionId: sessionId });
+        console.log('Updated session:', updatedSession);
+        res.json({ isError: 0, result: updatedSession });
+      } else {
+        console.error('Failed to update session');
+        res.status(500).json({ isError: 1, result: 'Failed to update session' });
+      }
+    } else {
+      const newSession = await collection.insertOne({
+        sessionId: sessionId,
+        userId: [1],
+      });
+      console.log(newSession);
+      res.json({ isError: 0, result: newSession });
+    }
+  } catch (error) {
+    console.error('Error updating or creating session:', error);
+    res.status(500).json({ isError: 1, result: 'Error updating or creating session' });
+  }
+});
+
+
+
+function generateNewSession() {
+  const newSession = Math.floor(100000000 + Math.random() * 900000000).toString();
+  return newSession;
+}
+
 function compileCode(req, res) {
-  
   const { Code, Language } = req.body;
   const compilerCommand = getCompilerCommand(Language, Code);
   console.log('Compiler Command:', compilerCommand); 
@@ -53,8 +160,6 @@ function getCompilerCommand(Language, Code) {
       throw new Error('Unsupported language');
   }
 }
-
-
 
 app.get('/api/data', (req, res) => {
   console.log('Received a request directly from:', req.ip);
