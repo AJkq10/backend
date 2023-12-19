@@ -14,18 +14,6 @@ client.connect(err => {
     console.log('Connected to MongoDB');
   });
 // MongoDB data retrieval and manipulation functionality
-async function getData(req, res) {
-    try {
-        const db = client.db(dbName);
-        const collection = db.collection('sessions');
-        const result = await collection.find({}).toArray();
-        console.log(result);
-        res.json({ isError: 0, result });
-      } catch (error) {
-        console.error('Error retrieving data from MongoDB:', error);
-        res.status(500).json({ isError: 1, result: 'Error retrieving data from MongoDB' });
-      }
-}
 
 async function getSession(req, res) {
     try {
@@ -95,12 +83,11 @@ async function setSession(req, res) {
       }}
 
 function generateNewSession() {
-  const newSession = Math.floor(Math.random() * 9).toString();
-  return newSession;
+    const newSession = Math.floor(100000000 + Math.random() * 900000000).toString();
+    return newSession;
 }
 
 module.exports = {
-  getData,
   getSession,
   setSession,
 };

@@ -7,6 +7,14 @@ const tempDir = path.join(__dirname, '..', 'temp');
 const outputDir = path.join(__dirname, '..', 'output');
 // Other imports...
 
+async function getData(req, res) {
+    console.log('Received a request directly from:', req.ip);
+    const data = {
+      message: 'Hello from the backend!',
+      timestamp: new Date().toISOString(),
+    };
+    res.json(data);
+}
 // Compile-time functionality
 function compileCode(req, res) {
     console.log(req.body);
@@ -43,5 +51,6 @@ function getCompilerCommand(Language, Code) {
       }}
 
 module.exports = {
-  compileCode,
+    getData,
+    compileCode,
 };

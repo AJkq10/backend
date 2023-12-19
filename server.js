@@ -15,9 +15,9 @@ app.use(express.json()); // This middleware parses JSON data in the request body
 
 // Compile-time routes
 app.post('/api/compile', compileController.compileCode);
+app.get('/api/getData', compileController.getData);
 
 // MongoDB data retrieval routes
-app.get('/api/getData', mongoController.getData);
 app.get('/api/getSession', mongoController.getSession);
 app.post('/api/setsession', mongoController.setSession);
 
