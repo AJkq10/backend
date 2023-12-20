@@ -1,17 +1,25 @@
 // server.js
 const express = require('express');
 const cors = require('cors');
-const compileController = require('./controllers/compileControllers'); // Fix the import path
-const mongoController = require('./controllers/mongoControllers'); // Fix the import path
+const http = require('http');
+const socketIO = require('socket.io');
+
+const compileController = require('./controllers/compileControllers');
+const mongoController = require('./controllers/mongoControllers');
+const socketController = require('./controllers/socketController'); // Import the socket controller
 
 const app = express();
 const port = 3000;
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+});
 
-// Enable CORS middleware
 app.use(cors());
-app.use(express.json()); // This middleware parses JSON data in the request body
-
-// Middleware and other configurations...
+app.use(express.json());
 
 // Compile-time routes
 app.post('/api/compile', compileController.compileCode);
@@ -21,8 +29,9 @@ app.get('/api/getData', compileController.getData);
 app.get('/api/getSession', mongoController.getSession);
 app.post('/api/setsession', mongoController.setSession);
 
-// Other runtime routes...
+// Use the socket controller
+socketController(io);
 
-app.listen(port, '0.0.0.0', () => {
+server.listen(port, '0.0.0.0', () => {
   console.log(`Server is running on http://0.0.0.0:${port}`);
 });
