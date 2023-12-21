@@ -6,7 +6,8 @@ const socketIO = require('socket.io');
 
 const compileController = require('./controllers/compileControllers');
 const mongoController = require('./controllers/mongoControllers');
-const socketController = require('./controllers/socketController'); // Import the socket controller
+const socketController = require('./controllers/socketController'); 
+const scraperController = require('./controllers/scraperController'); 
 
 const app = express();
 const port = 3000;
@@ -28,6 +29,9 @@ app.get('/api/getData', compileController.getData);
 // MongoDB data retrieval routes
 app.get('/api/getSession', mongoController.getSession);
 app.post('/api/setsession', mongoController.setSession);
+
+//Scrapper routes
+app.post('/api/scrape', scraperController);
 
 // Use the socket controller
 socketController(io);

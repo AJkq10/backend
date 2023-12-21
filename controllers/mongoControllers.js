@@ -13,7 +13,6 @@ client.connect(err => {
     }
     console.log('Connected to MongoDB');
   });
-// MongoDB data retrieval and manipulation functionality
 
 async function getSession(req, res) {
     try {

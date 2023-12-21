@@ -5,7 +5,6 @@ const path = require('path');
 
 const tempDir = path.join(__dirname, '..', 'temp');
 const outputDir = path.join(__dirname, '..', 'output');
-// Other imports...
 
 async function getData(req, res) {
     console.log('Received a request directly from:', req.ip);
