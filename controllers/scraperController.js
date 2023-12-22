@@ -5,11 +5,17 @@ const cheerio = require('cheerio');
 
 const router = express.Router();
 
-const getSpecificDivContent = (url, $) => {
+const getSelectorByURL = (url) => {
   if (url.includes('geeksforgeeks')) {
-    return $('.problems_problem_content__Xm_eO').html();
+    return '.problems_problem_content__Xm_eO';
   } else if (url.includes('leetcode')) {
-    return $('.xFUwe').html();
+    return '.xFUwe';
+  } else if (url.includes('codeforces')) {
+    return '.problem-statement';
+  } else if (url.includes('codechef')) {
+    return '._problemBody_iu0mi_33';
+  } else if (url.includes('hackerearth')) {
+    return '.problem-details';
   } else {
     return null;
   }
@@ -22,19 +28,21 @@ router.post('/api/scrape', async (req, res) => {
       return res.status(400).send('URL parameter is missing');
     }
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ headless: "new" });
     const page = await browser.newPage();
-    await page.goto(url);
-    await page.waitForTimeout(2500);
-    const htmlContent = await page.content();
-    const $ = cheerio.load(htmlContent);
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-    const specificDivContent = getSpecificDivContent(url, $);
-    if (specificDivContent === null) {
+    const selectorToWaitFor = getSelectorByURL(url);
+    if (!selectorToWaitFor) {
       return res.status(400).send('Unsupported website');
     }
 
-    console.log(specificDivContent);
+    await page.waitForSelector(selectorToWaitFor);
+
+    const htmlContent = await page.content();
+    const $ = cheerio.load(htmlContent);
+    const specificDivContent = $(selectorToWaitFor).html();
+
     res.send(specificDivContent);
     await browser.close();
   } catch (error) {
