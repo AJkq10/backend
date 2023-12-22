@@ -1,7 +1,8 @@
 #include <iostream>
-
 int main() {
-    // Display the result
-    std::cout << "The sum of ";
-
+  int a, b;
+  std::cin >> a >> b;
+  int sum = a + b;
+  std::cout << "The sum is: " << sum << std::endl;
+  return 0;
 }
