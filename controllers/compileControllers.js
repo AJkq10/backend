@@ -1,8 +1,8 @@
-// controllers/compileController.js
+// compileController.js
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const async = require('async'); // Import the async library
+const async = require('async'); 
 
 const tempDir = path.join(__dirname, '..', 'temp');
 const outputDir = path.join(__dirname, '..', 'output');
@@ -30,11 +30,10 @@ const compileQueue = async.queue((task, callback) => {
           const outputContent = fs.readFileSync(outputPath, 'utf8');
           res.json({ isError: 0, result: outputContent });
       }
-      callback(); // Release the queue task
+      callback();
   });
-}, 1); // Concurrency is set to 1 for synchronous processing
+}, 1); 
 
-// Compile-time functionality
 function compileCode(req, res) {
     console.log(req.body);
     const { Code, Language,Input } = req.body;    
@@ -46,7 +45,6 @@ function compileCode(req, res) {
 function getCompilerCommand(Language, Code,Input) {
   switch (Language) {
     case 1:
-        // C++ logic (unchanged from your original code)
         const cppCodePath = path.join(tempDir, 'code.cpp');
         const cppInputPath = path.join(tempDir, 'input.txt');
         console.log('C++ Code Path:', cppCodePath);
