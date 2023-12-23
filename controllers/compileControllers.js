@@ -15,6 +15,16 @@ async function getData(req, res) {
     };
     res.json(data);
 }
+function parseErrorMessage(stderr) {
+    const lines = stderr.split('\n');
+    const parsedErrorLines = lines.map((line) => {
+        const tempDirPath = path.resolve(tempDir);
+        const relativePath = line.replace(tempDirPath, ''); 
+        return relativePath.trim();
+    });
+
+    return parsedErrorLines.join('\n');
+}
 const compileQueue = async.queue((task, callback) => {
   console.log(task);
   const { Code, Language, Input, res } = task;
@@ -24,7 +34,9 @@ const compileQueue = async.queue((task, callback) => {
   exec(compilerCommand, (error, stdout, stderr) => {
       if (error || stderr) {
           console.error(`Error: ${error ? error.message : stderr}`);
-          res.status(500).json({ isError: 1, result: 'Compilation failed' });
+          const errorMessage = parseErrorMessage(stderr);
+          res.status(500).json({ isError: 1, result: errorMessage });
+     
       } else {
           const outputPath = path.join(outputDir, 'output.txt');
           const outputContent = fs.readFileSync(outputPath, 'utf8');
